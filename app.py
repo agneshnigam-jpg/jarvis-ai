@@ -17,11 +17,20 @@ def chat():
     if not user_message.strip():
         return jsonify({"reply": "Kuch toh likho!"})
 
-    response = client.models.generate_content(
-        model="gemini-3.6-flash",
-        contents=user_message
-    )
-    return jsonify({"reply": response.text})
+    try:
+        response = client.models.generate_content(
+            model="gemini-3.6-flash",
+            contents=user_message
+        )
+        return jsonify({"reply": response.text})
+    except Exception as e:
+        print("ERROR:", str(e))
+        return jsonify({"reply": "Thodi si dikkat aayi, dobara try karo."}), 200
+
+
+@app.route("/health")
+def health():
+    return "OK"
 
 
 if __name__ == "__main__":
