@@ -22,7 +22,7 @@ def chat():
         payload = {
             "contents": [{"parts": [{"text": user_message}]}]
         }
-        res = requests.post(GEMINI_URL, json=payload, timeout=30)
+        res = requests.post(GEMINI_URL, json=payload, timeout=50)
         data = res.json()
 
         if "candidates" in data:
