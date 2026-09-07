@@ -1,9 +1,10 @@
 import os
+import requests
 from flask import Flask, request, jsonify, render_template
-from google import genai
 
 app = Flask(__name__)
-client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+API_KEY = os.environ.get("GEMINI_API_KEY")
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key={API_KEY}"
 
 
 @app.route("/")
@@ -18,14 +19,22 @@ def chat():
         return jsonify({"reply": "Kuch toh likho!"})
 
     try:
-        response = client.models.generate_content(
-            model="gemini-flash-lite-latest",
-            contents=user_message
-        )
-        return jsonify({"reply": response.text})
+        payload = {
+            "contents": [{"parts": [{"text": user_message}]}]
+        }
+        res = requests.post(GEMINI_URL, json=payload, timeout=30)
+        data = res.json()
+
+        if "candidates" in data:
+            reply_text = data["candidates"][0]["content"]["parts"][0]["text"]
+            return jsonify({"reply": reply_text})
+        else:
+            print("API RESPONSE ISSUE:", data)
+            return jsonify({"reply": "Thodi si dikkat aayi, dobara try karo."})
+
     except Exception as e:
         print("ERROR:", str(e))
-        return jsonify({"reply": "Thodi si dikkat aayi, dobara try karo."}), 200
+        return jsonify({"reply": "Thodi si dikkat aayi, dobara try karo."})
 
 
 @app.route("/health")
